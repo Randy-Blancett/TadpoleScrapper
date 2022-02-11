@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf ./dist",
     "build": "tsc",
+    "start": "npm run build && npm run moveResources && node dist/index.js ",
     "moveResources": "cp -rf resources/config config",
     "fullBuild": "npm run clean && npm run build && npm run moveResources"
   },
