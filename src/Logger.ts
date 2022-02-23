@@ -1,11 +1,10 @@
-
 export enum LogLevel {
     NONE = -2,
     ERROR = -1,
     STANDARD = 0,
     INFO = 1,
     DEBUG = 2,
-    TRACE = 3,
+    TRACE = 3
 }
 
 export default class Logger {
@@ -36,15 +35,13 @@ export default class Logger {
     }
 
     public static statusTick() {
-        if (Logger.logLevel != LogLevel.STANDARD)
-            return;
+        if (Logger.logLevel != LogLevel.STANDARD) return;
         process.stdout.write('.');
         this.needNewLine = true;
     }
 
     static rawLog(logLevel: LogLevel, message: string) {
-        if (Logger.logLevel < logLevel)
-            return;
+        if (Logger.logLevel < logLevel) return;
         if (this.needNewLine) {
             process.stdout.write('\n');
             this.needNewLine = false;
