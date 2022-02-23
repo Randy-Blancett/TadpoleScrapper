@@ -37,22 +37,23 @@ export class EventLocation {
     }
 }
 export default class Event {
-    comment: string = '';
-    actorUid: string = '';
+    comment = '';
+    actorUid = '';
     attachments: string[] | null = null;
-    cameraMan: string = '';
+    cameraMan = '';
     subjects: string[] | null = null;
     membersDisplay: string[] | null = null;
     labels: string[] | null = null;
     goalLabels: string[] | null = null;
-    key: string = '';
+    key = '';
     type: EventTypes | null = null;
     time: Date | null = null;
     location: EventLocation | null = null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static parse(jsonData: any) {
         Logger.trace('Creating EventModel from Json Data.');
-        let output: Event = new Event();
+        const output: Event = new Event();
         output.comment = jsonData.comment;
         output.actorUid = jsonData.actor_uid;
         output.attachments = jsonData.attachments;
@@ -69,10 +70,10 @@ export default class Event {
     }
 
     static processLables(labels: string[]) {
-        let output: string[] = [];
+        const output: string[] = [];
         if (labels == null) return output;
         for (const label of labels) {
-            let words = label.trim().split(' ');
+            const words = label.trim().split(' ');
             for (let i = 0; i < words.length; i++) {
                 if (words[i].trim().length < 1) continue;
                 words[i] =
@@ -103,7 +104,9 @@ export default class Event {
 
     static type2Enum(type: string) {
         for (const event in EventTypes) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((<any>EventTypes)[event] == type)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (<any>EventTypes)[event];
         }
         Logger.log(type + ': has no Enum Value.');

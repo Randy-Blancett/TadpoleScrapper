@@ -10,8 +10,9 @@
     "build": "tsc",
     "start": "npm run build && npm run moveResources && node dist/index.js ",
     "moveResources": "cp -rf resources/config config",
-    "fullBuild": "npm run clean && npm run prettier-format && npm run build && npm run moveResources",
-    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
+    "fullBuild": "npm run clean && npm run prettier-format && npm run lint && npm run build && npm run moveResources",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [
     "test"
@@ -30,6 +31,11 @@
   "devDependencies": {
     "@types/node": "^17.0.15",
     "@types/yargs": "^17.0.8",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.5.1",
     "typescript": "^4.5.5"
   }

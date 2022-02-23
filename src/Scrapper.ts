@@ -10,7 +10,6 @@ import OutputHandler from './OutputHandler.js';
 import ImageTracker from './ImageTracker.js';
 import { MimeTypes, SplitType } from './Enums.js';
 import { fileTypeFromFile } from 'file-type';
-import RequestError from './models/RequestError.js';
 
 export default class Scrapper {
     readonly authString: string;
@@ -38,7 +37,7 @@ export default class Scrapper {
 
             //Scrape by month
             while (curStart.getTime() < end.getTime()) {
-                let curEnd: DoDate = curStart.clone();
+                const curEnd: DoDate = curStart.clone();
                 curEnd.incMonth();
                 Logger.log(
                     'Processing photos from ' +
@@ -47,16 +46,17 @@ export default class Scrapper {
                         curEnd.toDateString()
                 );
                 this.website.login(this.authString);
-                let eventList: EventList = await this.website.getPictureIndex(
+                const eventList: EventList = await this.website.getPictureIndex(
                     curStart.detatch(),
                     curEnd.detatch()
                 );
-                let trackerList: ImageTracker[] = await this.processEvents(
+                const trackerList: ImageTracker[] = await this.processEvents(
                     eventList
                 );
                 await this.processTrackerFiles(trackerList);
                 curStart = curEnd.clone();
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             switch (error.status) {
                 case 401: {
@@ -88,8 +88,8 @@ export default class Scrapper {
 
     async validateOriginal(tracker: ImageTracker) {
         Logger.trace('Scrapper.validateOriginal: ' + tracker.getInitFile());
-        let curType = await fileTypeFromFile(tracker.getInitFile());
-        let curMime = MimeTypes.fromContentType(curType?.mime);
+        const curType = await fileTypeFromFile(tracker.getInitFile());
+        const curMime = MimeTypes.fromContentType(curType?.mime);
         Logger.debug(
             'Tracker Mime: ' +
                 tracker.getInitType().getContentType() +
@@ -98,7 +98,7 @@ export default class Scrapper {
         );
         if (curMime == tracker.getInitType()) return;
         tracker.setInitType(curMime);
-        let newPath = this.outputHandler.getPathFromMime(
+        const newPath = this.outputHandler.getPathFromMime(
             curMime,
             tracker.getCreateDate(),
             tracker.getAttatchment()
@@ -167,7 +167,7 @@ export default class Scrapper {
 
     async processEvents(eventList: EventList) {
         Logger.trace('Scrapper.processEvents');
-        let output: ImageTracker[] = [];
+        const output: ImageTracker[] = [];
         await Promise.all(
             eventList.events.map(async (event) => {
                 Logger.trace('Processing Event');
@@ -176,11 +176,11 @@ export default class Scrapper {
                     Logger.debug(' - Discarding Event.');
                     return;
                 }
-                let i: number = 0;
+                let i = 0;
                 if (event.attachments !== null)
                     await Promise.all(
                         event.attachments.map(async (attachment) => {
-                            let tracker: ImageTracker = new ImageTracker(
+                            const tracker: ImageTracker = new ImageTracker(
                                 event,
                                 i++
                             );
@@ -200,6 +200,7 @@ export default class Scrapper {
         return output;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async dlOrigImg(fileData: any, tracker: ImageTracker) {
         Logger.trace('Scrapper.dlOrigImg');
         try {
@@ -214,10 +215,10 @@ export default class Scrapper {
                     tracker.getAttatchment()
                 )
             );
-            let w = await fileData.pipe(
+            const w = await fileData.pipe(
                 fs.createWriteStream(tracker.getInitFile())
             );
-            let done: boolean = false;
+            let done = false;
             w.on('finish', async () => {
                 done = true;
                 Logger.log(
@@ -228,7 +229,7 @@ export default class Scrapper {
                 await new Promise((vars) => setTimeout(vars, 100));
             }
         } catch (err) {
-            console.error(err);
+            Logger.error(err);
         }
     }
 
@@ -238,8 +239,8 @@ export default class Scrapper {
         try {
             switch (tracker.getInitType()) {
                 case MimeTypes.PNG: {
-                    let image = await Jimp.read(tracker.getInitFile());
-                    let file = tracker.addFile(
+                    const image = await Jimp.read(tracker.getInitFile());
+                    const file = tracker.addFile(
                         MimeTypes.JPG,
                         this.outputHandler.getPathFromMime(
                             MimeTypes.JPG,
@@ -255,10 +256,11 @@ export default class Scrapper {
                             file
                     );
                     Logger.statusTick();
+                    break;
                 }
                 case MimeTypes.JPG: {
-                    let image = await Jimp.read(tracker.getInitFile());
-                    let file = tracker.addFile(
+                    const image = await Jimp.read(tracker.getInitFile());
+                    const file = tracker.addFile(
                         MimeTypes.PNG,
                         this.outputHandler.getPathFromMime(
                             MimeTypes.PNG,
@@ -278,7 +280,7 @@ export default class Scrapper {
             }
         } catch (error) {
             Logger.error('Problem converting ' + tracker.getInitFile());
-            console.log(error);
+            Logger.error(error);
         }
     }
 }

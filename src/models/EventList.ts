@@ -2,9 +2,9 @@ import Logger from '../Logger.js';
 import Event from './Event.js';
 export default class EventList {
     events: Event[] = [];
-    static parse(events: any) {
+    static parse(events: Array<Event>) {
         Logger.trace('EventList.parse');
-        let output: EventList = new EventList();
+        const output: EventList = new EventList();
 
         if (!Array.isArray(events)) {
             Logger.debug('Events is not an array.');

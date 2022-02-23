@@ -18,6 +18,7 @@ const configFile: PathLike = path.resolve(
 );
 
 class CmdLineParser {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly args: any;
     private startDate: DoDate | null = null;
     private endDate: DoDate | null = null;
@@ -84,19 +85,19 @@ class CmdLineParser {
     public async check(): Promise<boolean> {
         if (
             !(await Promise.all([
-                this.args.check((data: any) => {
+                this.args.check((data: { startDate: string }) => {
                     this.setStartDate(DoDate.parse(data.startDate));
                     if (this.startDate === null || !this.startDate.isValid()) {
-                        console.log('invalid start date...');
+                        Logger.error('invalid start date...');
                         return false;
                     }
                     return true;
                 }),
-                this.args.check((data: any) => {
+                this.args.check((data: { endDate: string }) => {
                     if (data.endDate !== null && data.endDate !== '') {
                         this.setEndDate(DoDate.parse(data.endDate));
                         if (this.endDate == null || !this.endDate.isValid()) {
-                            console.log('invalid start date...');
+                            Logger.error('invalid start date...');
                             return false;
                         }
                     }
@@ -126,7 +127,7 @@ class CmdLineParser {
 
     public getEndDate(): DoDate {
         if (this.endDate == null) {
-            let tmp = this.setEndDate(new DoDate(null));
+            const tmp = this.setEndDate(new DoDate(null));
             tmp.incMonth();
             return tmp;
         }
@@ -148,9 +149,9 @@ class CmdLineParser {
     }
 }
 
-let argsSetup = new CmdLineParser();
+const argsSetup = new CmdLineParser();
 argsSetup.check();
-let args = argsSetup.detach();
+const args = argsSetup.detach();
 
 //set Logging
 switch (args.logLevel) {
@@ -183,7 +184,7 @@ switch (args.logLevel) {
 let dataConf: ConfData = new ConfData('');
 if (existsSync(configFile)) {
     Logger.debug('Loaded config from data.json');
-    let tmp = JSON.parse(readFileSync(configFile).toString());
+    const tmp = JSON.parse(readFileSync(configFile).toString());
     dataConf = new ConfData(tmp.authKey);
 } else {
     Logger.debug('No data.json config found.');
@@ -195,5 +196,9 @@ if (args.none) split = SplitType.NONE;
 
 Logger.debug(args);
 
-let app: Scrapper = new Scrapper(dataConf.getAuthKey(), args.outputDir, split);
+const app: Scrapper = new Scrapper(
+    dataConf.getAuthKey(),
+    args.outputDir,
+    split
+);
 app.run(argsSetup.getStartDate(), argsSetup.getEndDate());

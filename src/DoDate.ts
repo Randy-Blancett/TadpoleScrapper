@@ -1,7 +1,7 @@
 export default class DoDate {
     readonly date: Date;
 
-    static parse(input: any) {
+    static parse(input: string) {
         return new DoDate(new Date(Date.parse(input)));
     }
 

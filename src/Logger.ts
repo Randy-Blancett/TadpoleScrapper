@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export enum LogLevel {
     NONE = -2,
     ERROR = -1,
@@ -10,7 +11,7 @@ export enum LogLevel {
 export default class Logger {
     private static needNewLine = false;
     private static logLevel: LogLevel = LogLevel.STANDARD;
-    public static info(message: any) {
+    public static info(message: unknown) {
         this.rawLog(LogLevel.DEBUG, message);
     }
 
@@ -18,19 +19,19 @@ export default class Logger {
         Logger.logLevel = logLevel;
     }
 
-    static debug(message: any) {
+    static debug(message: unknown) {
         this.rawLog(LogLevel.DEBUG, message);
     }
 
-    static error(message: any) {
+    static error(message: unknown) {
         this.rawLog(LogLevel.ERROR, message);
     }
 
-    static trace(message: any) {
+    static trace(message: unknown) {
         this.rawLog(LogLevel.TRACE, message);
     }
 
-    static log(message: any) {
+    static log(message: unknown) {
         this.rawLog(LogLevel.STANDARD, message);
     }
 
@@ -40,7 +41,7 @@ export default class Logger {
         this.needNewLine = true;
     }
 
-    static rawLog(logLevel: LogLevel, message: string) {
+    static rawLog(logLevel: LogLevel, message: unknown) {
         if (Logger.logLevel < logLevel) return;
         if (this.needNewLine) {
             process.stdout.write('\n');

@@ -14,6 +14,7 @@ export class UNKNOWN implements MimeType {
     public static getInstance(): UNKNOWN {
         return this.self;
     }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
     getContentType(): string {
         return 'unknown';
@@ -27,6 +28,7 @@ export class JPG implements MimeType {
     public static getInstance(): JPG {
         return this.self;
     }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
     getExtention(): string {
         return 'jpg';
@@ -41,6 +43,7 @@ export class PNG implements MimeType {
     public static getInstance(): PNG {
         return this.self;
     }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
     getContentType(): string {
         return 'image/png';
@@ -55,6 +58,7 @@ export class MP4 implements MimeType {
     public static getInstance(): MP4 {
         return this.self;
     }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
     getContentType(): string {
         return 'video/mp4';
@@ -74,7 +78,7 @@ export class MimeTypes {
         MimeTypes.PNG,
         MimeTypes.MP4
     ]);
-    public static fromContentType(contentType: any): MimeType {
+    public static fromContentType(contentType: string | undefined): MimeType {
         for (const type of this.types) {
             if (contentType == type.getContentType()) return type;
         }

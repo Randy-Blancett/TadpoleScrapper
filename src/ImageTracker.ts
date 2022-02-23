@@ -1,14 +1,13 @@
-import { JPG, MimeType, UNKNOWN } from './Enums.js';
-import Logger from './Logger.js';
-import Event, { EventTypes } from './models/Event.js';
+import { MimeType, UNKNOWN } from './Enums.js';
+import Event from './models/Event.js';
 
 export default class ImageTracker {
     private readonly event: Event;
     private readonly attatchment: number;
     private initType: MimeType = UNKNOWN.getInstance();
-    private initFile: string = '';
+    private initFile = '';
     private files = new Map<MimeType, string>();
-    private valid: boolean = false;
+    private valid = false;
 
     constructor(event: Event, index: number) {
         this.event = event;
@@ -64,7 +63,7 @@ export default class ImageTracker {
     }
 
     getDescription(): string {
-        let output: string = '';
+        let output = '';
         if (this.event === null) return output;
         if (this.event.comment !== null) output = this.event.comment + '\n';
 

@@ -40,7 +40,7 @@ export default class OutputHandler {
         attatchment: number,
         ext: string
     ): string {
-        let filename = this.getFileName(date, attatchment, ext);
+        const filename = this.getFileName(date, attatchment, ext);
         let output: string = path.resolve(baseDir, filename);
         if (date == null) {
             Logger.error(
