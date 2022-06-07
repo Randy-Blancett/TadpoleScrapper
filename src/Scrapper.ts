@@ -1,16 +1,15 @@
-import Tadpoles from "./tadpoles.js";
-import Logger from "./Logger.js";
+import Tadpoles from './tadpoles.js';
+import Logger from './Logger.js';
 import * as fs from 'fs';
-import EventList from "./models/EventList.js";
-import Jimp from "jimp";
-import { EventTypes } from "./models/Event.js";
-import { ExifTool } from "exiftool-vendored";
-import DoDate from "./DoDate.js";
-import OutputHandler from "./OutputHandler.js";
-import ImageTracker from "./ImageTracker.js";
-import { MimeTypes, SplitType } from "./Enums.js";
+import EventList from './models/EventList.js';
+import Jimp from 'jimp';
+import { EventTypes } from './models/Event.js';
+import { ExifTool } from 'exiftool-vendored';
+import DoDate from './DoDate.js';
+import OutputHandler from './OutputHandler.js';
+import ImageTracker from './ImageTracker.js';
+import { MimeTypes, SplitType } from './Enums.js';
 import { fileTypeFromFile } from 'file-type';
-import RequestError from "./models/RequestError.js";
 
 export default class Scrapper {
     readonly authString: string;
@@ -28,74 +27,92 @@ export default class Scrapper {
 
     public async run(start: DoDate, end: DoDate) {
         try {
-            Logger.trace("Scrapper.run")
-            Logger.trace(" - AuthString: " + this.authString);
-            Logger.trace(" - OutputDir: " + this.outputDir);
-            Logger.trace(" - Start Date: " + start.detatch());
-            Logger.trace(" - End Date: " + end.detatch());
+            Logger.trace('Scrapper.run');
+            Logger.trace(' - AuthString: ' + this.authString);
+            Logger.trace(' - OutputDir: ' + this.outputDir);
+            Logger.trace(' - Start Date: ' + start.detatch());
+            Logger.trace(' - End Date: ' + end.detatch());
 
             let curStart: DoDate = start.clone();
 
             //Scrape by month
             while (curStart.getTime() < end.getTime()) {
-                let curEnd: DoDate = curStart.clone();
+                const curEnd: DoDate = curStart.clone();
                 curEnd.incMonth();
-                Logger.log("Processing photos from " + curStart.toDateString() + " to " + curEnd.toDateString());
+                Logger.log(
+                    'Processing photos from ' +
+                        curStart.toDateString() +
+                        ' to ' +
+                        curEnd.toDateString()
+                );
                 this.website.login(this.authString);
-                let eventList: EventList = await this.website.getPictureIndex(curStart.detatch(), curEnd.detatch());
-                let trackerList: ImageTracker[] = await this.processEvents(eventList);
+                const eventList: EventList = await this.website.getPictureIndex(
+                    curStart.detatch(),
+                    curEnd.detatch()
+                );
+                const trackerList: ImageTracker[] = await this.processEvents(
+                    eventList
+                );
                 await this.processTrackerFiles(trackerList);
                 curStart = curEnd.clone();
             }
-        }
-        catch(error:any){
-            switch(error.status){
-                case 401:
-                    {
-                        Logger.log("Unable to log into Tadpoles using authKey: "+this.authString)
-                    }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            switch (error.status) {
+                case 401: {
+                    Logger.log(
+                        'Unable to log into Tadpoles using authKey: ' +
+                            this.authString
+                    );
+                }
             }
             Logger.error(error);
-            
-        }
-        finally {
-            Logger.trace("Scrapper.run.finally");
+        } finally {
+            Logger.trace('Scrapper.run.finally');
             Scrapper.exifTool.end();
         }
     }
 
     async processTrackerFiles(trackerList: ImageTracker[]) {
-        Logger.trace("Scrapper.processTrackerFiles");
-        Logger.log("Processing Tracker File Group");
-        await Promise.all(trackerList.map(
-            async (tracker) => {
-                Logger.trace(" - " + tracker.getInitFile());
+        Logger.trace('Scrapper.processTrackerFiles');
+        Logger.log('Processing Tracker File Group');
+        await Promise.all(
+            trackerList.map(async (tracker) => {
+                Logger.trace(' - ' + tracker.getInitFile());
                 await this.validateOriginal(tracker);
                 await this.convert2Format(tracker);
                 await this.updateMetadata(tracker);
-            }
-        ));
+            })
+        );
     }
 
     async validateOriginal(tracker: ImageTracker) {
-        Logger.trace("Scrapper.validateOriginal: " + tracker.getInitFile());
-        let curType = await fileTypeFromFile(tracker.getInitFile());
-        let curMime = MimeTypes.fromContentType(curType?.mime);
-        Logger.debug("Tracker Mime: " + tracker.getInitType().getContentType() + " File Mime: " + curMime.getContentType());
-        if (curMime == tracker.getInitType())
-            return;
+        Logger.trace('Scrapper.validateOriginal: ' + tracker.getInitFile());
+        const curType = await fileTypeFromFile(tracker.getInitFile());
+        const curMime = MimeTypes.fromContentType(curType?.mime);
+        Logger.debug(
+            'Tracker Mime: ' +
+                tracker.getInitType().getContentType() +
+                ' File Mime: ' +
+                curMime.getContentType()
+        );
+        if (curMime == tracker.getInitType()) return;
         tracker.setInitType(curMime);
-        let newPath = this.outputHandler.getPathFromMime(
-            curMime, tracker.getCreateDate(),
-            tracker.getAttatchment());
+        const newPath = this.outputHandler.getPathFromMime(
+            curMime,
+            tracker.getCreateDate(),
+            tracker.getAttatchment()
+        );
 
-        Logger.debug("File must be moved: " + tracker.getInitFile() + " -> " + newPath);
+        Logger.debug(
+            'File must be moved: ' + tracker.getInitFile() + ' -> ' + newPath
+        );
         fs.renameSync(tracker.getInitFile(), newPath);
         tracker.setInitFile(newPath);
     }
 
     async updateMetadata(tracker: ImageTracker) {
-        Logger.trace("Scrapper.updateMetadata: " + tracker.getInitFile());
+        Logger.trace('Scrapper.updateMetadata: ' + tracker.getInitFile());
         for (const file of tracker.getFileIterator()) {
             try {
                 await Scrapper.exifTool.write(file, {
@@ -106,7 +123,7 @@ export default class Scrapper {
                     MetadataDate: tracker.getIsoCreateDate(),
                     ModifyDate: tracker.getIsoCreateDate(),
                     DateCreated: tracker.getIsoCreateDate(),
-                    //Comment 
+                    //Comment
                     UserComment: tracker.getComment(),
                     Headline: tracker.getComment(),
                     'XMP:Headline': tracker.getComment(),
@@ -141,93 +158,129 @@ export default class Scrapper {
                     People: tracker.getSubjects()
                 });
                 Logger.statusTick();
-            }
-            catch (error) {
-                Logger.error("Failed to add metadata to: " + file);
+            } catch (error) {
+                Logger.error('Failed to add metadata to: ' + file);
                 Logger.error(error);
             }
         }
     }
 
     async processEvents(eventList: EventList) {
-        Logger.trace("Scrapper.processEvents")
-        let output: ImageTracker[] = [];
-        await Promise.all(eventList.events.map(
-            async (event) => {
-                Logger.trace("Processing Event")
-                Logger.trace(" - " + event.type)
+        Logger.trace('Scrapper.processEvents');
+        const output: ImageTracker[] = [];
+        await Promise.all(
+            eventList.events.map(async (event) => {
+                Logger.trace('Processing Event');
+                Logger.trace(' - ' + event.type);
                 if (event.type !== EventTypes.ACTIVITY) {
-                    Logger.debug(" - Discarding Event.")
+                    Logger.debug(' - Discarding Event.');
                     return;
                 }
-                let i: number = 0;
+                let i = 0;
                 if (event.attachments !== null)
-                    await Promise.all(event.attachments.map(async attachment => {
-                        let tracker: ImageTracker = new ImageTracker(event, i++);
-                        output.push(tracker);
-                        await this.dlOrigImg(await this.website.getImageFile(attachment, event.key, tracker), tracker);
-                    }
-                    ));
-            }));
+                    await Promise.all(
+                        event.attachments.map(async (attachment) => {
+                            const tracker: ImageTracker = new ImageTracker(
+                                event,
+                                i++
+                            );
+                            output.push(tracker);
+                            await this.dlOrigImg(
+                                await this.website.getImageFile(
+                                    attachment,
+                                    event.key,
+                                    tracker
+                                ),
+                                tracker
+                            );
+                        })
+                    );
+            })
+        );
         return output;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async dlOrigImg(fileData: any, tracker: ImageTracker) {
-        Logger.trace("Scrapper.dlOrigImg");
+        Logger.trace('Scrapper.dlOrigImg');
         try {
             if (!tracker.isValid()) {
-                Logger.error(" - tracker is not valid")
+                Logger.error(' - tracker is not valid');
                 return;
             }
-            tracker.setInitFile(this.outputHandler.getPathFromMime(
-                tracker.getInitType(), tracker.getCreateDate(),
-                tracker.getAttatchment()));
-            let w = await fileData.pipe(fs.createWriteStream(tracker.getInitFile()));
-            let done: boolean = false;
+            tracker.setInitFile(
+                this.outputHandler.getPathFromMime(
+                    tracker.getInitType(),
+                    tracker.getCreateDate(),
+                    tracker.getAttatchment()
+                )
+            );
+            const w = await fileData.pipe(
+                fs.createWriteStream(tracker.getInitFile())
+            );
+            let done = false;
             w.on('finish', async () => {
                 done = true;
-                Logger.log("Successfuly Downloaded image to: " + tracker.getInitFile());
+                Logger.log(
+                    'Successfuly Downloaded image to: ' + tracker.getInitFile()
+                );
             });
             while (!done) {
-                await new Promise(vars => setTimeout(vars, 100));
+                await new Promise((vars) => setTimeout(vars, 100));
             }
         } catch (err) {
-            console.error(err)
+            Logger.error(err);
         }
     }
 
     async convert2Format(tracker: ImageTracker) {
-        Logger.trace("Scrapper.convert2Jpg");
+        Logger.trace('Scrapper.convert2Jpg');
 
         try {
             switch (tracker.getInitType()) {
                 case MimeTypes.PNG: {
-                    let image = await Jimp.read(tracker.getInitFile());
-                    let file = tracker.addFile(MimeTypes.JPG, this.outputHandler.getPathFromMime(
-                        MimeTypes.JPG, tracker.getCreateDate(),
-                        tracker.getAttatchment()));
+                    const image = await Jimp.read(tracker.getInitFile());
+                    const file = tracker.addFile(
+                        MimeTypes.JPG,
+                        this.outputHandler.getPathFromMime(
+                            MimeTypes.JPG,
+                            tracker.getCreateDate(),
+                            tracker.getAttatchment()
+                        )
+                    );
                     image.write(file);
-                    Logger.info("Converted "+tracker.getInitFile()+" to JPG and saved to: " + file);
+                    Logger.info(
+                        'Converted ' +
+                            tracker.getInitFile() +
+                            ' to JPG and saved to: ' +
+                            file
+                    );
                     Logger.statusTick();
+                    break;
                 }
                 case MimeTypes.JPG: {
-                    let image = await Jimp.read(tracker.getInitFile());
-                    let file = tracker.addFile(MimeTypes.PNG, this.outputHandler.getPathFromMime(
-                        MimeTypes.PNG, tracker.getCreateDate(),
-                        tracker.getAttatchment()));
+                    const image = await Jimp.read(tracker.getInitFile());
+                    const file = tracker.addFile(
+                        MimeTypes.PNG,
+                        this.outputHandler.getPathFromMime(
+                            MimeTypes.PNG,
+                            tracker.getCreateDate(),
+                            tracker.getAttatchment()
+                        )
+                    );
                     image.write(file);
-                    Logger.info("Converted "+tracker.getInitFile()+" to PNG and saved to: " + file);
+                    Logger.info(
+                        'Converted ' +
+                            tracker.getInitFile() +
+                            ' to PNG and saved to: ' +
+                            file
+                    );
                     Logger.statusTick();
                 }
             }
-        }
-        catch (error) {
-            Logger.error("Problem converting " + tracker.getInitFile());
-            console.log(error);
+        } catch (error) {
+            Logger.error('Problem converting ' + tracker.getInitFile());
+            Logger.error(error);
         }
     }
 }
-
-
-
-

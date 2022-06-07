@@ -1,9 +1,9 @@
-import Logger from "../Logger.js";
+import Logger from '../Logger.js';
 export enum EventTypes {
-    ACTIVITY = "Activity",
-    DAILY_REPORT = "DailyReport",
-    NOTE = "Note",
-    UNKNOWN = "unknown"
+    ACTIVITY = 'Activity',
+    DAILY_REPORT = 'DailyReport',
+    NOTE = 'Note',
+    UNKNOWN = 'unknown'
 }
 export class EventLocation {
     readonly city: string;
@@ -27,34 +27,33 @@ export class EventLocation {
     }
 
     public getCountryName(): string {
-        if (this.countryCode === null)
-            return "";
+        if (this.countryCode === null) return '';
         switch (this.countryCode) {
-            case "USA": {
-                return "United States of America";
+            case 'USA': {
+                return 'United States of America';
             }
         }
-        return "";
+        return '';
     }
 }
 export default class Event {
-    comment: string = "";
-    actorUid: string = "";
+    comment = '';
+    actorUid = '';
     attachments: string[] | null = null;
-    cameraMan: string = "";
+    cameraMan = '';
     subjects: string[] | null = null;
     membersDisplay: string[] | null = null;
     labels: string[] | null = null;
     goalLabels: string[] | null = null;
-    key: string = "";
+    key = '';
     type: EventTypes | null = null;
     time: Date | null = null;
     location: EventLocation | null = null;
 
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static parse(jsonData: any) {
-        Logger.trace("Creating EventModel from Json Data.");
-        let output: Event = new Event();
+        Logger.trace('Creating EventModel from Json Data.');
+        const output: Event = new Event();
         output.comment = jsonData.comment;
         output.actorUid = jsonData.actor_uid;
         output.attachments = jsonData.attachments;
@@ -71,44 +70,47 @@ export default class Event {
     }
 
     static processLables(labels: string[]) {
-        let output: string[] = [];
-        if (labels == null)
-            return output;
+        const output: string[] = [];
+        if (labels == null) return output;
         for (const label of labels) {
-            let words = label.trim().split(" ");
+            const words = label.trim().split(' ');
             for (let i = 0; i < words.length; i++) {
-                if (words[i].trim().length < 1)
-                    continue;
-                words[i] = words[i][0].toUpperCase() + words[i].substring(1).replace("\\", '&').replace("/", '&');
+                if (words[i].trim().length < 1) continue;
+                words[i] =
+                    words[i][0].toUpperCase() +
+                    words[i].substring(1).replace('\\', '&').replace('/', '&');
             }
-            output.push(words.join(" "));
+            output.push(words.join(' '));
         }
         return output;
     }
 
     static string2Location(location: string): EventLocation | null {
-        if (location === undefined || location.length < 1)
-            return null;
+        if (location === undefined || location.length < 1) return null;
         switch (location) {
-            case "Goddard Mt Airy": {
-                return new EventLocation("Goddard",
-                    "Mt. Airy",
-                    "Maryland",
-                    "USA",
-                    location);
+            case 'Goddard Mt Airy': {
+                return new EventLocation(
+                    'Goddard',
+                    'Mt. Airy',
+                    'Maryland',
+                    'USA',
+                    location
+                );
             }
         }
-        Logger.error("Unknown Location: " + location);
+        Logger.error('Unknown Location: ' + location);
         return null;
     }
 
     static type2Enum(type: string) {
         for (const event in EventTypes) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((<any>EventTypes)[event] == type)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (<any>EventTypes)[event];
         }
-        Logger.log(type + ": has no Enum Value.");
-        Logger.trace(" - Event.type2Enum");
+        Logger.log(type + ': has no Enum Value.');
+        Logger.trace(' - Event.type2Enum');
         return EventTypes.UNKNOWN;
     }
 }

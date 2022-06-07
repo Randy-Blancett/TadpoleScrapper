@@ -1,22 +1,20 @@
 export default class DoDate {
     readonly date: Date;
 
-    static parse(input:any) {
+    static parse(input: string) {
         return new DoDate(new Date(Date.parse(input)));
     }
 
-    constructor(date: Date|null) {
-        if (date === null)
-            this.date = new Date();
-        else
-            this.date = date
+    constructor(date: Date | null) {
+        if (date === null) this.date = new Date();
+        else this.date = date;
     }
 
     incMonth() {
         this.date.setMonth(this.date.getMonth() + 1);
     }
 
-    toISOString(){
+    toISOString() {
         return this.date.toISOString();
     }
     isValid() {
@@ -26,7 +24,7 @@ export default class DoDate {
         return true;
     }
 
-    toDateString(){
+    toDateString() {
         return this.date.toDateString();
     }
 
@@ -41,15 +39,15 @@ export default class DoDate {
         return this.date.setDate(day);
     }
 
-    getTime(){
+    getTime() {
         return this.date.getTime();
     }
 
-    detatch(){
+    detatch() {
         return new Date(this.date);
     }
 
-    clone(){
+    clone() {
         return new DoDate(new Date(this.date));
     }
 }

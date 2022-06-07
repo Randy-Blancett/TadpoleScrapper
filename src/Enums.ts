@@ -14,12 +14,13 @@ export class UNKNOWN implements MimeType {
     public static getInstance(): UNKNOWN {
         return this.self;
     }
-    private constructor() { }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
     getContentType(): string {
-        return "unknown";
+        return 'unknown';
     }
     getExtention(): string {
-       return "ukn";
+        return 'ukn';
     }
 }
 export class JPG implements MimeType {
@@ -27,12 +28,13 @@ export class JPG implements MimeType {
     public static getInstance(): JPG {
         return this.self;
     }
-    private constructor() { }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
     getExtention(): string {
-        return "jpg";
+        return 'jpg';
     }
     getContentType(): string {
-        return "image/jpeg";
+        return 'image/jpeg';
     }
 }
 
@@ -41,12 +43,13 @@ export class PNG implements MimeType {
     public static getInstance(): PNG {
         return this.self;
     }
-    private constructor() { }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
     getContentType(): string {
-        return "image/png";
+        return 'image/png';
     }
     getExtention(): string {
-        return "png";
+        return 'png';
     }
 }
 
@@ -55,15 +58,15 @@ export class MP4 implements MimeType {
     public static getInstance(): MP4 {
         return this.self;
     }
-    private constructor() { }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
     getContentType(): string {
-        return "video/mp4";
+        return 'video/mp4';
     }
     getExtention(): string {
-        return "mp4";
+        return 'mp4';
     }
 }
-
 
 export class MimeTypes {
     public static readonly JPG = JPG.getInstance();
@@ -75,10 +78,9 @@ export class MimeTypes {
         MimeTypes.PNG,
         MimeTypes.MP4
     ]);
-    public static fromContentType(contentType: any): MimeType {
+    public static fromContentType(contentType: string | undefined): MimeType {
         for (const type of this.types) {
-            if (contentType == type.getContentType())
-                return type;
+            if (contentType == type.getContentType()) return type;
         }
         return MimeTypes.UNKNOWN;
     }
